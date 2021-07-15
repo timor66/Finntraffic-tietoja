@@ -24,20 +24,20 @@ class MapBoxComponent extends LitElement {
       timeout: MAB_BOX_TIMEOUT,
       maximumAge: 0
     };
-    this.buildMap();
+    this.buildMap();   
   }
 
   buildMap() {
     mapboxgl.accessToken = MAPBOX_TOKEN;
-  
+    
     this.map = new mapboxgl.Map({
       container: 'finntraffic-map',
       style: 'mapbox://styles/mapbox/light-v10',
       center: [24.94, 60.16],
       zoom: 6
-    });
+    }).addControl(new mapboxgl.NavigationControl(), 'top-left');  
   }
-   
+
   render() {
     return html`
       <div id="finntraffic-map"></div>
