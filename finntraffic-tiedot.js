@@ -69,7 +69,33 @@ class MapBoxComponent extends LitElement {
                           'text-offset': [0, 1.25],
                           'text-anchor': 'top'
                       }
-                  });      
+                  });   
+                  mappi.on('click', 'points', function (e) {
+                    var coordinates = e.features[0].geometry.coordinates.slice();
+                    var description = e.features[0].properties.tasks + "<br/>" + e.features[0].properties.time;
+                     
+                    // Ensure that if the map is zoomed out such that multiple
+                    // copies of the feature are visible, the popup appears
+                    // over the copy being pointed to.
+                    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                    }
+                     
+                    new mapboxgl.Popup()
+                        .setLngLat(coordinates)
+                        .setHTML(description)
+                        .addTo(mappi);
+                    });
+                     
+                    // Change the cursor to a pointer when the mouse is over the places layer.
+                    mappi.on('mouseenter', 'points', function () {
+                        mappi.getCanvas().style.cursor = 'pointer';
+                    });
+                     
+                    // Change it back to a pointer when it leaves.
+                    mappi.on('mouseleave', 'points', function () {
+                        mappi.getCanvas().style.cursor = '';
+                    });                     
               });
         });
   }
