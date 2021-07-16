@@ -5,6 +5,8 @@ const MAB_BOX_TIMEOUT = 60000000;
 const MAPBOX_TOKEN =
   'pk.eyJ1IjoidGltb3I2NiIsImEiOiJja3F3ODczd3UwNTJ4MndueHBkdjB5c3dsIn0.68mu1Rk-3ZMPqlzBF_HknQ';
 
+var mappi;
+
 class MapBoxComponent extends LitElement {
   constructor() {
     super();
@@ -24,34 +26,35 @@ class MapBoxComponent extends LitElement {
       timeout: MAB_BOX_TIMEOUT,
       maximumAge: 0
     };
+    mappi = this.map;
     this.buildMap(); 
   }
    
 
   buildMap() {
       mapboxgl.accessToken = MAPBOX_TOKEN;
-      this.map = new mapboxgl.Map({
+      mappi = new mapboxgl.Map({
           container: 'finntraffic-map',
           style: 'mapbox://styles/timor66/ckr32cq3pemln18qspaqpkqiq',
           center: [24.94, 60.16],
           zoom: 6,
       }).addControl(new mapboxgl.NavigationControl(), 'top-left'); 
 
-      this.map.on('load', () => {
+      mappi.on('load', () => {
         // Add an image to use as a custom marker
-          this.map.loadImage(
+          mappi.loadImage(
               'https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png',
               function (error, image) {
                   if (error) throw error;
-                  this.map.addImage('custom-marker', image);
+                  mappi.addImage('custom-marker', image);
                   // Add a GeoJSON source with 2 points
-                  this.map.addSource('points', {
+                  mappi.addSource('points', {
                       type: 'geojson',
                       data: 'https://tie.digitraffic.fi/api/v3/data/maintenance/trackings/latest'
                   });
 
                   // Add a symbol layer
-                  this.map.addLayer({
+                  mappi.addLayer({
                       'id': 'points',
                       'type': 'symbol',
                       'source': 'points',
@@ -75,8 +78,7 @@ class MapBoxComponent extends LitElement {
       return html`
           <div id="finntraffic-map"></div>
         `;
-  }
-} 
+  }} 
 
 //Component registration
 customElements.define('mapbox-component', MapBoxComponent);
