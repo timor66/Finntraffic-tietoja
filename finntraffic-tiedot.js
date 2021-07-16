@@ -94,7 +94,7 @@ class MapBoxComponent extends LitElement {
                      
                     // Change it back to a pointer when it leaves.
                     mappi.on('mouseleave', 'points', function () {
-                        mappi.getCanvas().style.cursor = '';
+                    mappi.getCanvas().style.cursor = '';
                     });                     
               });
         });
