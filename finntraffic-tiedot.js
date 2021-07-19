@@ -47,16 +47,16 @@ class MapBoxComponent extends LitElement {
           if (error) throw error;
           mappi.addImage('custom-marker', image);
           // Add a GeoJSON source with 2 points
-          mappi.addSource('points', {
+          mappi.addSource('tietyot', {
             type: 'geojson',
             data:
               'https://tie.digitraffic.fi/api/v3/data/traffic-messages/simple?inactiveHours=0&includeAreaGeometry=true&situationType=ROAD_WORK'
           });
 
-          map.addLayer({
-            id: 'points',
+          mappi.addLayer({
+            id: 'tietyot',
             type: 'line',
-            source: 'points',
+            source: 'tietyot',
             layout: {
               'line-join': 'round',
               'line-cap': 'round'
@@ -65,6 +65,17 @@ class MapBoxComponent extends LitElement {
               'line-color': '#888',
               'line-width': 8
             }
+          });
+
+          mappi.on('click', 'tietyot', function(e) {
+            var title = e.features[0].properties.announcements.[0].title;
+            var releaseTime = e.features[0].properties.releaseTime;
+            var description = e.features[0].properties.description;
+
+            new mapboxgl.Popup()
+              .setLngLat(e.lngLat)
+              .setHTML('<h2>' + title + '</h2><br/>' + releaseTime + '<br/>' + description)
+              .addTo(mappi);
           });
           // Add a symbol layer
           /*mappi.addLayer({
