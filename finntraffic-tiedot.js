@@ -68,7 +68,20 @@ class MapBoxComponent extends LitElement {
           });
 
           mappi.on('click', 'tietyot', function(e) {
-            var title = e.features[0].properties.announcements.[0].title;
+            Object.keys(e.features[0].properties.announcements[0]).forEach(function(prop) {
+              // `prop` is the property name
+              // `data[prop]` is the property value
+              console.log(e.features[0].properties.announcements[prop]);
+
+            });
+            //for (const prop in e.features[0].properties.announcements) {
+              // `prop` contains the name of each property, i.e. `'code'` or `'items'`
+              // consequently, `data[prop]` refers to the value of each property, i.e.
+              // either `42` or the array
+          //}
+            var txt = e.features[0].properties.announcements[0].title;
+            console.log(txt);
+            var title = e.features[0].properties.announcements.title;
             var releaseTime = e.features[0].properties.releaseTime;
             var description = e.features[0].properties.description;
 
