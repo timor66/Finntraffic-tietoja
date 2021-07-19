@@ -27,34 +27,47 @@ class MapBoxComponent extends LitElement {
       maximumAge: 0
     };
     mappi = this.map;
-    this.buildMap(); 
+    this.buildMap();
   }
-   
 
   buildMap() {
-      mapboxgl.accessToken = MAPBOX_TOKEN;
-      mappi = new mapboxgl.Map({
-          container: 'finntraffic-map',
-          style: 'mapbox://styles/timor66/ckr32cq3pemln18qspaqpkqiq',
-          center: [24.94, 60.16],
-          zoom: 6,
-      }).addControl(new mapboxgl.NavigationControl(), 'top-left'); 
+    mapboxgl.accessToken = MAPBOX_TOKEN;
+    mappi = new mapboxgl.Map({
+      container: 'finntraffic-map',
+      style: 'mapbox://styles/timor66/ckr32cq3pemln18qspaqpkqiq',
+      center: [24.94, 60.16],
+      zoom: 6
+    }).addControl(new mapboxgl.NavigationControl(), 'top-left');
 
-      mappi.on('load', () => {
-        // Add an image to use as a custom marker
-          mappi.loadImage(
-              'https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png',
-              function (error, image) {
-                  if (error) throw error;
-                  mappi.addImage('custom-marker', image);
-                  // Add a GeoJSON source with 2 points
-                  mappi.addSource('points', {
-                      type: 'geojson',
-                      data: 'https://tie.digitraffic.fi/api/v3/data/maintenance/trackings/latest'
-                  });
+    mappi.on('load', () => {
+      // Add an image to use as a custom marker
+      mappi.loadImage(
+        'https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png',
+        function(error, image) {
+          if (error) throw error;
+          mappi.addImage('custom-marker', image);
+          // Add a GeoJSON source with 2 points
+          mappi.addSource('points', {
+            type: 'geojson',
+            data:
+              'https://tie.digitraffic.fi/api/v3/data/traffic-messages/simple?inactiveHours=0&includeAreaGeometry=true&situationType=ROAD_WORK'
+          });
 
-                  // Add a symbol layer
-                  mappi.addLayer({
+          map.addLayer({
+            id: 'points',
+            type: 'line',
+            source: 'points',
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': '#888',
+              'line-width': 8
+            }
+          });
+          // Add a symbol layer
+          /*mappi.addLayer({
                       'id': 'points',
                       'type': 'symbol',
                       'source': 'points',
@@ -69,8 +82,8 @@ class MapBoxComponent extends LitElement {
                           'text-offset': [0, 1.25],
                           'text-anchor': 'top'
                       }
-                  });   
-                  mappi.on('click', 'points', function (e) {
+                  });*/
+          /*mappi.on('click', 'points', function (e) {
                     var coordinates = e.features[0].geometry.coordinates.slice();
                     var description = e.features[0].properties.tasks + "<br/>" + e.features[0].properties.time;
                      
@@ -95,17 +108,18 @@ class MapBoxComponent extends LitElement {
                     // Change it back to a pointer when it leaves.
                     mappi.on('mouseleave', 'points', function () {
                     mappi.getCanvas().style.cursor = '';
-                    });                     
-              });
-        });
+                    });*/
+        }
+      );
+    });
   }
 
   render() {
-      return html`
-          <div id="finntraffic-map"></div>
-        `;
-  }} 
+    return html`
+      <div id="finntraffic-map"></div>
+    `;
+  }
+}
 
 //Component registration
 customElements.define('mapbox-component', MapBoxComponent);
-    
