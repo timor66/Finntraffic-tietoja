@@ -53,6 +53,12 @@ class MapBoxComponent extends LitElement {
               'https://tie.digitraffic.fi/api/v3/data/traffic-messages/simple?inactiveHours=0&includeAreaGeometry=true&situationType=ROAD_WORK'
           });
 
+          mappi.addSource('tiedotteet', {
+            type: 'geojson',
+            data:
+              'https://tie.digitraffic.fi/api/v3/data/traffic-messages/simple?inactiveHours=0&includeAreaGeometry=false&situationType=TRAFFIC_ANNOUNCEMENT'
+          });
+
           mappi.addLayer({
             id: 'tietyot',
             type: 'line',
@@ -67,28 +73,79 @@ class MapBoxComponent extends LitElement {
             }
           });
 
+          mappi.addLayer({
+            id: 'tiedotteet',
+            type: 'line',
+            source: 'tiedotteet',
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': '#888',
+              'line-width': 8
+            }
+          });
+
+          var popup_tietyot = new mapboxgl.Popup();
+          var popup_tiedotteet = new mapboxgl.Popup();
+
+          mappi.on('mouseenter', 'tietyot', function(e) {
+            mappi.getCanvas().style.cursor = 'pointer';
+          });
+
+          mappi.on('mouseleave', 'tietyot', function() {
+            mappi.getCanvas().style.cursor = '';
+            popup_tietyot.remove();
+          });
+
+          mappi.on('mouseenter', 'tiedotteet', function(e) {
+            mappi.getCanvas().style.cursor = 'pointer';
+          });
+
+          mappi.on('mouseleave', 'tiedotteet', function() {
+            mappi.getCanvas().style.cursor = '';
+            popup_tiedotteet.remove();
+          });
+
           mappi.on('click', 'tietyot', function(e) {
-            Object.keys(e.features[0].properties.announcements[0]).forEach(function(prop) {
-              // `prop` is the property name
-              // `data[prop]` is the property value
-              console.log(e.features[0].properties.announcements[prop]);
+            mappi.getCanvas().style.cursor = 'pointer';
 
-            });
-            //for (const prop in e.features[0].properties.announcements) {
-              // `prop` contains the name of each property, i.e. `'code'` or `'items'`
-              // consequently, `data[prop]` refers to the value of each property, i.e.
-              // either `42` or the array
-          //}
-            var txt = e.features[0].properties.announcements[0].title;
-            console.log(txt);
-            var title = e.features[0].properties.announcements.title;
+            var announcements = eval(e.features[0].properties.announcements);
+            var title = announcements[0].title;
             var releaseTime = e.features[0].properties.releaseTime;
-            var description = e.features[0].properties.description;
+            var description = announcements[0].location.description;
 
-            new mapboxgl.Popup()
-              .setLngLat(e.lngLat)
-              .setHTML('<h2>' + title + '</h2><br/>' + releaseTime + '<br/>' + description)
-              .addTo(mappi);
+            popup_tietyot.setHTML(
+              '<h3>' +
+                title +
+                '</h3><br/>' +
+                releaseTime +
+                '<br/><br/>' +
+                description
+            );
+            popup_tietyot.setLngLat(e.lngLat);
+            popup_tietyot.addTo(mappi);
+          });
+
+          mappi.on('click', 'tiedotteet', function(e) {
+            mappi.getCanvas().style.cursor = 'pointer';
+
+            var announcements = eval(e.features[0].properties.announcements);
+            var title = announcements[0].title;
+            var releaseTime = e.features[0].properties.releaseTime;
+            var description = announcements[0].location.description;
+
+            popup_tiedotteet.setHTML(
+              '<h3>' +
+                title +
+                '</h3><br/>' +
+                releaseTime +
+                '<br/><br/>' +
+                description
+            );
+            popup_tiedotteet.setLngLat(e.lngLat);
+            popup_tiedotteet.addTo(mappi);
           });
           // Add a symbol layer
           /*mappi.addLayer({
@@ -136,6 +193,50 @@ class MapBoxComponent extends LitElement {
         }
       );
     });
+
+    mappi.on('idle', function() {
+      // If these two layers have been added to the style,
+      // add the toggle buttons.
+      if (mappi.getLayer('tietyot') && mappi.getLayer('tiedotteet')) {
+        // Enumerate ids of the layers.
+        var toggleableLayerIds = ['tietyot', 'tiedotteet'];
+        // Set up the corresponding toggle button for each layer.
+        for (var i = 0; i < toggleableLayerIds.length; i++) {
+          var id = toggleableLayerIds[i];
+          if (!document.getElementById(id)) {
+            // Create a link.
+            var link = document.createElement('a');
+            link.id = id;
+            link.href = '#';
+            link.textContent = id;
+            link.className = 'active';
+            // Show or hide layer when the toggle is clicked.
+            link.onclick = function(e) {
+              var clickedLayer = this.textContent;
+              e.preventDefault();
+              e.stopPropagation();
+
+              var visibility = mappi.getLayoutProperty(
+                clickedLayer,
+                'visibility'
+              );
+
+              // Toggle layer visibility by changing the layout object's visibility property.
+              if (visibility === 'visible') {
+                mappi.setLayoutProperty(clickedLayer, 'visibility', 'none');
+                this.className = '';
+              } else {
+                this.className = 'active';
+                mappi.setLayoutProperty(clickedLayer, 'visibility', 'visible');
+              }
+            };
+
+            var layers = document.getElementById('menu');
+            layers.appendChild(link);
+          }
+        }
+      }
+    });
   }
 
   render() {
@@ -144,6 +245,6 @@ class MapBoxComponent extends LitElement {
     `;
   }
 }
-
+S;
 //Component registration
 customElements.define('mapbox-component', MapBoxComponent);
